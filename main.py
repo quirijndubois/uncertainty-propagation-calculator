@@ -4,16 +4,17 @@ import numpy as np
 
 import math
 
-def signif(x, digits=6):
-    if x == 0 or not math.isfinite(x):
-        return x
-    digits -= math.ceil(math.log10(abs(x)))
-    return round(x, digits)
+def extract_digits_and_power(number:float):
+    scientific_notation = f"{number:e}"
+
+    exponent_index = scientific_notation.index("e")
+
+    return scientific_notation[:exponent_index],scientific_notation[exponent_index+1:]
 
 st.title("Uncertainty Propagation Calculator")
 
 expression_input = st.text_input("Enter the expression (e.g., x * y):")
-st.write(expression_input)
+expression_input = expression_input.replace("^","**")
 if expression_input != "":
 
     expression = parse_expr(expression_input)
@@ -52,7 +53,13 @@ if expression_input != "":
     out1 = f(*values[1])
     out2 = delta_f(*values[1],*uncertainties[1])
 
-    out2 = signif(out2,2)
+    st.latex( f"{out1} \pm {out2}")
+
+    out1_data = extract_digits_and_power(out1)
+    out2_data = extract_digits_and_power(out2)
+
+    out1 = str(out1_data[0]) + f"\cdot 10^{int(out1_data[1])}"
+    out2 = str(out2_data[0]) + f"\cdot 10^{int(out2_data[1])}"
 
     st.latex( f"{out1} \pm {out2}")
 
